@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "835968199171",
+    "firebase_url": "https://rouf-a6674.firebaseio.com",
+    "project_id": "rouf-a6674",
+    "storage_bucket": "rouf-a6674.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:835968199171:android:2f563a1c998e53c83c7c36",
+        "android_client_info": {
+          "package_name": "com.example.asfalitoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "835968199171-9k1059u1qobhcs2jlvbqbta24o732sqs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLfLKP5s9B7D26OW1KTUlrr_6jqrqENz0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "835968199171-9k1059u1qobhcs2jlvbqbta24o732sqs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
