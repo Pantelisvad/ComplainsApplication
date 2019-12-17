@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "835968199171-mufhbd8jfh68a6kos9obkhe4bj5e7upi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.asfalitoapp",
+            "certificate_hash": "083f5a5503d4fbb34bd690f12b3452d472e68404"
+          }
+        },
+        {
           "client_id": "835968199171-9k1059u1qobhcs2jlvbqbta24o732sqs.apps.googleusercontent.com",
           "client_type": 3
         }
