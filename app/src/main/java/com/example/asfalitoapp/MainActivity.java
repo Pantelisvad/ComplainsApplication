@@ -54,27 +54,17 @@ import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private LocationManager locationManager;
-    private LocationListener listener;
     FirebaseDatabase database;
-    Location usrlocation;
     DatabaseReference ref;
     FirebaseAuth mAuth;
-    FusedLocationProviderClient mFusedLocationClient;
     EditText desc;
+    Location usrlocation;
+    FusedLocationProviderClient fusedLocationClient;
 
 
     // Folder path for Firebase Storage.
     String Storage_Path = "All_Image_Uploads/";
-
-    // Root Database Name for Firebase Database.
-    String Database_Path = "All_Image_Uploads_Database";
-
-    // Creating button.
     Button ChooseButton, UploadButton;
-
-    // Creating EditText.
-    EditText ImageName;
 
     // Creating ImageView.
     ImageView SelectImage;
@@ -84,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
     // Creating StorageReference and DatabaseReference object.
     StorageReference storageReference;
-    DatabaseReference databaseReference;
 
     // Image request code for onActivityResult() .
     int Image_Request_Code = 7;
@@ -95,12 +84,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
+        getLastlocation();
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
-        ImageName = (EditText) findViewById(R.id.editText);
+        desc = (EditText) findViewById(R.id.editText);
 
         requestStoragePermission();
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
 
         // Assign FirebaseStorage instance to storageReference.
@@ -110,21 +100,10 @@ public class MainActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         ref = database.getReference("images");
 
-
-        //Assign ID'S to button.
         ChooseButton = (Button) findViewById(R.id.button3);
         UploadButton = (Button) findViewById(R.id.button2);
-
-        // Assign ID's to EditText.
-        ImageName = (EditText) findViewById(R.id.editText);
-
-        // Assign ID'S to image view.
         SelectImage = (ImageView) findViewById(R.id.imageView);
-
-        // Assigning Id to ProgressDialog.
         progressDialog = new ProgressDialog(MainActivity.this);
-
-        // Adding click listener to Choose image button.
         ChooseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -152,50 +131,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mFusedLocationClient.getLastLocation().addOnCompleteListener(
-                new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        Location location = task.getResult();
-                        if (location == null) {
-                            requestNewLocationData();
-                        } else {
-                            usrlocation.setLatitude(location.getLatitude());
-                            usrlocation.setLongitude(location.getLongitude());
-                        }
-                    }
-                }
-        );
+
+
     }
 
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == Image_Request_Code && resultCode == RESULT_OK && data != null && data.getData() != null) {
-
-            FilePathUri = data.getData();
-
-            try {
-
-                // Getting selected image into Bitmap.
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), FilePathUri);
-
-                // Setting up bitmap selected image into ImageView.
-                SelectImage.setImageBitmap(bitmap);
-
-                // After selecting image change choose button above text.
-                ChooseButton.setText("Image Selected");
-
-            } catch (IOException e) {
-
-                e.printStackTrace();
-            }
-        }
-    }
 
     // Creating Method to get the selected image file Extension from File Path URI.
     public String GetFileExtension(Uri uri) {
@@ -209,10 +151,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void getLastlocation() {
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener < Location > () {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            usrlocation = location;
+
+                        }
+                    }
+                });
+    }
+
     // Creating UploadImageFileToFirebaseStorage method to upload image on storage.
     public void UploadImageFileToFirebaseStorage() {
 
-        // Checking whether FilePathUri Is empty or not.
         if (FilePathUri != null) {
 
 
@@ -228,12 +183,9 @@ public class MainActivity extends AppCompatActivity {
 
             // Adding addOnSuccessListener to second StorageReference.
             storageReference2nd.putFile(FilePathUri)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    .addOnSuccessListener(new OnSuccessListener < UploadTask.TaskSnapshot > () {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                            // Getting image name from EditText and store into string variable.
-                            String TempImageName = ImageName.getText().toString().trim();
 
                             // Hiding the progressDialog after done uploading.
                             progressDialog.dismiss();
@@ -241,10 +193,10 @@ public class MainActivity extends AppCompatActivity {
                             // Showing toast message after done uploading.
                             Toast.makeText(getApplicationContext(), "Image Uploaded Successfully ", Toast.LENGTH_LONG).show();
 
-                            getLastLocation();
+
 
                             @SuppressWarnings("VisibleForTests")
-                            Report imageUploadInfo = new Report(desc.getText().toString() , taskSnapshot.getStorage().toString(), usrlocation.getLatitude(), usrlocation.getLongitude());
+                            Report imageUploadInfo = new Report(desc.getText().toString(), taskSnapshot.getStorage().toString(), usrlocation.getLatitude(), usrlocation.getLongitude());
 
                             // Getting image upload ID.
                             // String ImageUploadId = databaseReference.push().getKey();
@@ -273,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                     })
 
                     // On progress change upload time.
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    .addOnProgressListener(new OnProgressListener < UploadTask.TaskSnapshot > () {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
 
@@ -287,66 +239,42 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "Please Select Image or Add Image Name", Toast.LENGTH_LONG).show();
 
         }
-    }
-
-    private void requestNewLocationData(){
-
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(0);
-        mLocationRequest.setFastestInterval(0);
-        mLocationRequest.setNumUpdates(1);
-
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mFusedLocationClient.requestLocationUpdates(
-                mLocationRequest, mLocationCallback,
-                Looper.myLooper()
-        );
+        // Checking whether FilePathUri Is empty or not.
 
     }
 
-    private LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location mLastLocation = locationResult.getLastLocation();
-            usrlocation.setLatitude(mLastLocation.getLatitude());
-            usrlocation.setLongitude(mLastLocation.getLongitude());
 
-        }
-    };
+
 
     private void requestStoragePermission() {
         Dexter.withActivity(this)
                 .withPermissions(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         // check if all permissions are granted
                         if (report.areAllPermissionsGranted()) {
+                            getLastlocation();
+
+
                             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                                // TODO: Consider calling
-                                //    Activity#requestPermissions
-                                // here to request the missing permissions, and then overriding
-                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                //                                          int[] grantResults)
-                                // to handle the case where the user grants the permission. See the documentation
-                                // for Activity#requestPermissions for more details.
+                                getLastlocation();
+
                                 return;
                             }
                         }
 
                         // check for permanent denial of any permission
-                        if (report.isAnyPermissionPermanentlyDenied()) {
-                            // show alert dialog navigating to Settings
+                        if (!report.areAllPermissionsGranted()) {
                             showSettingsDialog();
                         }
                     }
 
                     @Override
-                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                    public void onPermissionRationaleShouldBeShown(List < PermissionRequest > permissions, PermissionToken token) {
                         token.continuePermissionRequest();
                     }
                 }).
@@ -387,4 +315,30 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, 101);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Image_Request_Code && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            FilePathUri = data.getData();
+
+            try {
+
+                // Getting selected image into Bitmap.
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), FilePathUri);
+
+                // Setting up bitmap selected image into ImageView.
+                SelectImage.setImageBitmap(bitmap);
+
+                // After selecting image change choose button above text.
+                ChooseButton.setText("Image Selected");
+
+            } catch (IOException e) {
+
+                e.printStackTrace();
+            }
+        }
+    }
 }

@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "835968199171-enpeq4m33jiucopgai6lmgunllruvm3q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.asfalitoapp",
+            "certificate_hash": "60912bb69dfb1123cebf6f6175eda1364f2ccc63"
+          }
+        },
+        {
+          "client_id": "835968199171-mufhbd8jfh68a6kos9obkhe4bj5e7upi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.asfalitoapp",
+            "certificate_hash": "083f5a5503d4fbb34bd690f12b3452d472e68404"
+          }
+        },
+        {
           "client_id": "835968199171-9k1059u1qobhcs2jlvbqbta24o732sqs.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -28,7 +44,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "835968199171-9k1059u1qobhcs2jlvbqbta24o732sqs.apps.googleusercontent.com",
+              "client_id": "835968199171-640vebthr1bqm47dn7cd3ptdg8tjmr9j.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
