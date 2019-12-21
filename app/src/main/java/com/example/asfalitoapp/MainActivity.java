@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Folder path for Firebase Storage.
-    String Storage_Path = "All_Image_Uploads/";
+    String Storage_Path = "images";
     Button ChooseButton, UploadButton;
 
     // Creating ImageView.
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         database = FirebaseDatabase.getInstance();
-        usersref = database.getReference("images");
+        usersref = database.getReference("images/");
 
         ChooseButton = (Button) findViewById(R.id.button3);
         UploadButton = (Button) findViewById(R.id.button2);
@@ -179,13 +179,17 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.show();
 
             // Creating second StorageReference.
-            StorageReference storageReference2nd = storageReference.child(Storage_Path + System.currentTimeMillis() + "." + GetFileExtension(FilePathUri));
+
+             final String id=mAuth.getUid()+System.currentTimeMillis();
+
+            StorageReference storageReference2nd = storageReference.child(Storage_Path + id + "." + GetFileExtension(FilePathUri));
 
             // Adding addOnSuccessListener to second StorageReference.
             storageReference2nd.putFile(FilePathUri)
                     .addOnSuccessListener(new OnSuccessListener < UploadTask.TaskSnapshot > () {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
 
                             // Hiding the progressDialog after done uploading.
                             progressDialog.dismiss();
@@ -196,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                             @SuppressWarnings("VisibleForTests")
-                            Report imageUploadInfo = new Report(desc.getText().toString(), taskSnapshot.getStorage().toString(), usrlocation.getLatitude(), usrlocation.getLongitude(),mAuth.getUid());
+                            Report imageUploadInfo = new Report(desc.getText().toString(), taskSnapshot.getStorage().getDownloadUrl().toString(), usrlocation.getLatitude(), usrlocation.getLongitude(),mAuth.getUid(),id);
 
                             // Getting image upload ID.
                             // String ImageUploadId = databaseReference.push().getKey();

@@ -6,6 +6,7 @@ public class Report {
     private double latitude;
     private double longtitude;
     private String username;
+    private String id;
 
     public String getUsername() {
         return username;
@@ -15,12 +16,21 @@ public class Report {
         this.username = username;
     }
 
-    public Report(String desc, String url, double latitude, double longtitude , String username) {
+    public Report(String desc, String url, double latitude, double longtitude , String username , String id) {
         this.desc = desc;
         this.url = url;
         this.latitude = latitude;
         this.longtitude = longtitude;
         this.username = username;
+        this.id=id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getDesc() {
