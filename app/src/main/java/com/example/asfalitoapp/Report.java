@@ -5,12 +5,22 @@ public class Report {
     private String url;
     private double latitude;
     private double longtitude;
+    private String username;
 
-    public Report(String desc, String url, double latitude, double longtitude) {
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Report(String desc, String url, double latitude, double longtitude , String username) {
         this.desc = desc;
         this.url = url;
         this.latitude = latitude;
         this.longtitude = longtitude;
+        this.username = username;
     }
 
     public String getDesc() {

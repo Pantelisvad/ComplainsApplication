@@ -55,7 +55,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     FirebaseDatabase database;
-    DatabaseReference ref;
+    DatabaseReference usersref;
     FirebaseAuth mAuth;
     EditText desc;
     Location usrlocation;
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         database = FirebaseDatabase.getInstance();
-        ref = database.getReference("images");
+        usersref = database.getReference("images");
 
         ChooseButton = (Button) findViewById(R.id.button3);
         UploadButton = (Button) findViewById(R.id.button2);
@@ -196,14 +196,15 @@ public class MainActivity extends AppCompatActivity {
 
 
                             @SuppressWarnings("VisibleForTests")
-                            Report imageUploadInfo = new Report(desc.getText().toString(), taskSnapshot.getStorage().toString(), usrlocation.getLatitude(), usrlocation.getLongitude());
+                            Report imageUploadInfo = new Report(desc.getText().toString(), taskSnapshot.getStorage().toString(), usrlocation.getLatitude(), usrlocation.getLongitude(),mAuth.getUid());
 
                             // Getting image upload ID.
                             // String ImageUploadId = databaseReference.push().getKey();
 
 
-                            DatabaseReference newref = ref.child(mAuth.getUid()).push();
-                            newref.setValue(imageUploadInfo);
+
+                            DatabaseReference imageref = usersref.push();
+                            imageref.setValue(imageUploadInfo);
 
                         }
 
