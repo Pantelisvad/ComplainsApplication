@@ -46,6 +46,7 @@ import com.karumi.dexter.listener.DexterError;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.PermissionRequestErrorListener;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.net.URI;
@@ -67,12 +68,11 @@ public class MainActivity extends AppCompatActivity {
     private Button mapbutton;
     private Button mButtonChooseImage;
     private Button mButtonUpload;
-    private TextView mTextViewShowUploads;
     private EditText mEditTextFileName;
     private ImageView mImageView;
     private ProgressBar mProgressBar;
     private String fileurl;
-    private TextView tv;
+    private Button logoutbutton;
 
     private Uri mImageUri;
 
@@ -87,19 +87,29 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            finish();
         }
+        logoutbutton = findViewById(R.id.logoutbtn);
         database = FirebaseDatabase.getInstance();
         dbRef = database.getReference("reports");
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference("reports");
         mButtonChooseImage = findViewById(R.id.button3);
         mButtonUpload = findViewById(R.id.submit);
-        mTextViewShowUploads = findViewById(R.id.reportslist);
         mEditTextFileName = findViewById(R.id.editText2);
         mImageView = findViewById(R.id.imageView2);
-        mProgressBar = findViewById(R.id.progress_bar);
+        mProgressBar = findViewById(R.id.progressBar_cyclic);
         requestPermissions();
-        tv= findViewById(R.id.uidtext);
+        logoutbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAuth.signOut();
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+            }
+        });
         mapbutton = findViewById(R.id.mapbutton);
         mapbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        tv.setText(mAuth.getUid());
+
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,13 +139,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        mTextViewShowUploads.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openImagesActivity();
-            }
-        });
-
+        getLastlocation();
 
     }
 
@@ -161,17 +165,15 @@ public class MainActivity extends AppCompatActivity {
             final String id = mAuth.getUid() + System.currentTimeMillis();
 
             final StorageReference storageReference2nd = storageRef.child(id);
-
+            mProgressBar.setVisibility(View.VISIBLE);
 
             // Adding addOnSuccessListener to second StorageReference.
             storageReference2nd.putFile(mImageUri)
-
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                             Toast.makeText(getApplicationContext(), "Image Uploaded Successfully ", Toast.LENGTH_LONG).show();
-
                             storageReference2nd.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri) {
@@ -179,20 +181,22 @@ public class MainActivity extends AppCompatActivity {
                                     Report imageUploadInfo = new Report(mEditTextFileName.getText().toString(), url, usrlocation.getLatitude(), usrlocation.getLongitude(), mAuth.getUid(), id);
                                     DatabaseReference imageref = dbRef.child(id);
                                     imageref.setValue(imageUploadInfo);
+                                    mProgressBar.setVisibility(View.GONE);
+                                    mEditTextFileName.setText("");
+                                    mImageView.setBackgroundColor(-1);
+                                    mImageView.setVisibility(View.GONE);
+                                    mButtonChooseImage.setText("Επιλέξτε εικόνα");
                                 }
                             });
 
                         }
                     })
-                    // If something goes wrong .
+
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception exception) {
 
-                            // Hiding the progressDialog.
-                            // progressDialog.dismiss();
-
-                            // Showing exception erro message.
+                            mProgressBar.setVisibility(View.GONE);
                             Toast.makeText(MainActivity.this, exception.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     })
@@ -201,15 +205,14 @@ public class MainActivity extends AppCompatActivity {
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-//progrressdialog
+
                         }
                     });
         } else {
 
-            Toast.makeText(MainActivity.this, "Please Select Image or Add Image Name", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, "Παρακαλώ επιλέξτε μια εικόνα απο τη βιβλιοθήκη σας", Toast.LENGTH_LONG).show();
 
         }
-        // Checking whether mImageUri Is empty or not.
 
     }
 
@@ -258,16 +261,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void showSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("Need Permissions");
-        builder.setMessage("This app needs permission to use this feature. You can grant them in app settings.");
-        builder.setPositiveButton("GOTO SETTINGS", new DialogInterface.OnClickListener() {
+        builder.setTitle("Χρειαζόμαστε τη συγκατάθεση σάς");
+        builder.setMessage("Η Εφαρμογή χρειάζεται παραπάνω δικαιώματα στη συσκευή σας , πλοηγηθείτε στις ρυθμίσεις");
+        builder.setPositiveButton("Άνοιγμα Ρυθμίσεων", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
                 openSettings();
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Άκυρο", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -308,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
                 mImageView.setImageBitmap(bitmap);
 
                 // After selecting image change choose button above text.
-                mButtonChooseImage.setText("Image Selected");
+                mButtonChooseImage.setText("Εικόνα Επιλέγη");
 
             } catch (IOException e) {
 
@@ -320,9 +323,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openImagesActivity() {
-        Intent intent = new Intent(MainActivity.this, ImagesActivity.class);
-        startActivity(intent);
-    }
 
 }

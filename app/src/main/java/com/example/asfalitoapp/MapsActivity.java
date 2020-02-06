@@ -37,13 +37,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private DatabaseReference reports;
     private String  user;
+    FirebaseAuth firebaseAuth;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        user = FirebaseAuth.getInstance().getUid();
+        firebaseAuth = FirebaseAuth.getInstance();
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -56,6 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        user = firebaseAuth.getUid();
         mMap = googleMap;
 
         reports.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -63,16 +66,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
 
-                    if (user ==child.child("username").getValue(String.class)) {
+
 
                         double location_left = child.child("latitude").getValue(Double.class);
                         double location_right = child.child("longtitude").getValue(Double.class);
                         LatLng cod = new LatLng(location_left, location_right);
 
+                        if(child.child("username").getValue(String.class).equals(user))
                         mMap.addMarker(new MarkerOptions().position(cod).title(child.child("desc").getValue(String.class)).snippet(child.child("url").getValue(String.class)));
 
                     }
-                }
+
                 mMap.setInfoWindowAdapter(new InfoWindowAdapter(getApplicationContext()));
             }
 

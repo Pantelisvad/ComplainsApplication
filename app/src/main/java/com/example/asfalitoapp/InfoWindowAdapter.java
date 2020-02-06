@@ -25,7 +25,7 @@ public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     private void renderWindowText(Marker marker , View view){
         TextView tvTitle = (TextView) view.findViewById(R.id.info_text);
         ImageView imageView = (ImageView) view.findViewById(R.id.info_image);
-        Picasso.get().load(marker.getSnippet()).into(imageView);
+        Picasso.get().load(marker.getSnippet()).fit().centerInside().into(imageView);
         tvTitle.setText(marker.getTitle());
 
     }
